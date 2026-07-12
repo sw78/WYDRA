@@ -401,7 +401,7 @@
     </svg>
     <span class="grid-tick mono" style="top:96px; left:24px;">SEKTOR A1</span>
     <span class="grid-tick mono" style="top:96px; right:24px;">SEKTOR J8</span>
-    <span class="grid-tick mono" style="bottom:96px; left:24px;">TEREN LEŚNY / MIEJSKI</span>
+    <span class="grid-tick mono" style="bottom:96px; left:24px;">TEREN LEŚNY</span>
 
     <div class="wrap hero-inner">
       <div class="hero-text">
@@ -651,7 +651,7 @@
 
 <footer>
   <div class="wrap footer-row">
-    <a href="#hero" class="logo"><span style="color:var(--blaze);">WYDRA</span><span>ASG</span></a>
+    <a href="#hero" class="logo"><span style="color:var(--blaze);">WYDRA</span><span>ARENA ASG</span></a>
     <ul class="footer-links">
       <li><a href="#o-nas">O nas</a></li>
       <li><a href="#oferta">Oferta</a></li>
@@ -696,6 +696,39 @@
 
   // Footer year
   document.getElementById('copyrightYear').textContent = '© ' + new Date().getFullYear() + ' WYDRA ASG';
+</script>
+
+<!-- LICZNIK WEJŚĆ — WYDRA ASG -->
+<script>
+(function () {
+  var COUNTER_KEY = "sw78_wydra_visits_9f3k2";
+  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+  var THIRTY_MIN = 30 * 60 * 1000;
+
+  function sendHit() {
+    var now = Date.now();
+    var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+    if (now - last < THIRTY_MIN) return;
+
+    fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        localStorage.setItem(LAST_VISIT_KEY, String(now));
+      })
+      .catch(function () {});
+  }
+
+  if (document.visibilityState === "visible") {
+    sendHit();
+  } else {
+    document.addEventListener("visibilitychange", function once() {
+      if (document.visibilityState === "visible") {
+        document.removeEventListener("visibilitychange", once);
+        sendHit();
+      }
+    });
+  }
+})();
 </script>
 
 </body>
