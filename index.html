@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WYDRA ASG — Gry ASG i szkolenia survivalowe</title>
+<meta name="description" content="WYDRA ASG — gry scenariuszowe ASG oraz szkolenia survivalowe. Teren, taktyka, charakter.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/logo-wydra.png">
+<style>
+  :root{
+    --bg:#0a0a08;
+    --panel:#15150f;
+    --panel-2:#1c1c14;
+    --line:#3d4020;
+    --line-soft:#242417;
+    --moss:#7a8536;
+    --sand:#c9c6ad;
+    --bone:#f3efe2;
+    --blaze:#e6540f;
+    --blaze-soft:rgba(230,84,15,.15);
+    --radius:2px;
+    --maxw:1180px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important;}
+  }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--sand);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  h1,h2,h3,.stamp,.tag{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.03em; color:var(--bone);}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  a{color:inherit;}
+  img{max-width:100%; display:block;}
+
+  ::selection{background:var(--blaze); color:var(--bg);}
+
+  :focus-visible{
+    outline:2px solid var(--blaze);
+    outline-offset:3px;
+  }
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(18,21,15,.85);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  nav.wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:72px;
+  }
+  .logo{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:1.35rem;
+    letter-spacing:.06em; text-decoration:none; display:flex; align-items:center; gap:.5em;
+  }
+  .logo-mark{width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--line);}
+  .logo span:first-child{color:var(--blaze);}
+  .nav-links{
+    display:flex; align-items:center; gap:32px; list-style:none; margin:0; padding:0;
+  }
+  .nav-links a{
+    text-decoration:none; font-size:.82rem; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--sand); font-weight:600; position:relative; padding:6px 0;
+  }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:0; width:0; height:2px; background:var(--blaze);
+    transition:width .25s ease;
+  }
+  .nav-links a:hover::after, .nav-links a:focus-visible::after{width:100%;}
+  .nav-fb{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line); padding:8px 16px; border-radius:var(--radius);
+    text-decoration:none; font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--bone); transition:border-color .2s, color .2s;
+  }
+  .nav-fb:hover{border-color:var(--blaze); color:var(--blaze);}
+  .nav-fb svg{width:16px; height:16px; fill:currentColor;}
+
+  .burger{
+    display:none; width:40px; height:40px; border:1px solid var(--line); background:none;
+    border-radius:var(--radius); cursor:pointer; padding:0; position:relative;
+  }
+  .burger span, .burger::before, .burger::after{
+    content:""; position:absolute; left:9px; right:9px; height:2px; background:var(--bone);
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .burger::before{top:14px;}
+  .burger span{top:19px;}
+  .burger::after{top:24px;}
+  .burger.open::before{transform:translateY(5px) rotate(45deg);}
+  .burger.open::after{transform:translateY(-5px) rotate(-45deg);}
+  .burger.open span{opacity:0;}
+
+  .mobile-panel{
+    display:none; flex-direction:column; gap:2px; padding:8px 24px 20px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .mobile-panel.open{display:flex;}
+  .mobile-panel a{
+    text-decoration:none; color:var(--sand); padding:12px 4px; border-bottom:1px solid var(--line-soft);
+    font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; font-weight:600;
+  }
+  .mobile-panel a:last-child{border-bottom:none;}
+
+  @media (max-width:860px){
+    .nav-links, .nav-fb.desktop-only{display:none;}
+    .burger{display:block;}
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; min-height:100svh; display:flex; align-items:center;
+    padding-top:72px; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(122,133,54,.16), transparent 55%),
+      radial-gradient(ellipse at 80% 70%, rgba(230,84,15,.10), transparent 50%),
+      var(--bg);
+  }
+  @media (max-width:1000px){
+    .hero{flex-direction:column; padding-bottom:60px;}
+  }
+  .contour{
+    position:absolute; inset:0; z-index:0; opacity:.5;
+  }
+  .grid-overlay{
+    position:absolute; inset:0; z-index:0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:linear-gradient(to bottom, transparent, black 15%, black 75%, transparent);
+    opacity:.5;
+  }
+  .grid-tick{
+    position:absolute; font-size:.65rem; letter-spacing:.15em; color:var(--moss); z-index:1;
+  }
+  .hero-inner{
+    position:relative; z-index:2; width:100%;
+    display:grid; grid-template-columns:1.15fr .85fr; align-items:center; gap:40px;
+  }
+  @media (max-width:1000px){
+    .hero-inner{grid-template-columns:1fr; justify-items:center; text-align:center; gap:36px;}
+    .hero-text{display:flex; flex-direction:column; align-items:center;}
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:.75rem; letter-spacing:.22em; color:var(--blaze); font-weight:600;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:""; width:26px; height:1px; background:var(--blaze);}
+  .hero h1{
+    font-size:clamp(3rem, 9vw, 6.4rem); line-height:.94; margin:0 0 22px; font-weight:700;
+  }
+  .hero h1 em{
+    font-style:normal; color:var(--blaze);
+  }
+  .hero p.lead{
+    max-width:520px; font-size:1.05rem; color:var(--sand); margin:0 0 36px;
+  }
+  .cta-row{display:flex; flex-wrap:wrap; gap:16px;}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+    padding:15px 26px; font-family:'Oswald',sans-serif; font-weight:600; font-size:.82rem;
+    letter-spacing:.1em; text-transform:uppercase; border-radius:var(--radius);
+    border:1px solid transparent; cursor:pointer; transition:transform .2s ease, background .2s, border-color .2s, color .2s;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:var(--blaze); color:#181005;}
+  .btn-primary:hover{background:#ff8a29;}
+  .btn-outline{border-color:var(--line); color:var(--bone);}
+  .btn-outline:hover{border-color:var(--blaze); color:var(--blaze);}
+
+  .stamp-wrap{
+    justify-self:center;
+    width:clamp(260px, 24vw, 420px); height:clamp(260px, 24vw, 420px);
+    border-radius:50%; overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 0 0 14px var(--bg), 0 0 70px rgba(230,84,15,.2);
+  }
+  @media (max-width:1000px){
+    .stamp-wrap{width:min(70vw, 340px); height:min(70vw, 340px);}
+  }
+  .stamp-wrap img{width:100%; height:100%; object-fit:cover;}
+
+  .scroll-cue{
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%); z-index:2;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:.65rem; letter-spacing:.2em; color:var(--moss);
+  }
+  .scroll-cue .line{width:1px; height:34px; background:linear-gradient(var(--moss), transparent); animation:scrollcue 2s infinite;}
+  @keyframes scrollcue{0%{opacity:.2;} 50%{opacity:1;} 100%{opacity:.2;}}
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:120px 0;}
+  .section-head{max-width:640px; margin-bottom:64px;}
+  .section-head .eyebrow{margin-bottom:16px;}
+  .section-head h2{font-size:clamp(2.1rem, 4vw, 3rem); margin:0 0 18px; line-height:1.05;}
+  .section-head p{color:var(--sand); font-size:1rem; max-width:560px; margin:0;}
+
+  /* ---------- ABOUT / STATS ---------- */
+  .about{background:var(--panel); border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);}
+  .about-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:64px; align-items:start;}
+  @media (max-width:860px){.about-grid{grid-template-columns:1fr; gap:48px;}}
+  .about-copy p{color:var(--sand); margin:0 0 18px; max-width:56ch;}
+  .about-copy p:last-child{margin-bottom:0;}
+  .placeholder-note{
+    display:inline-block; margin-top:22px; font-family:'JetBrains Mono',monospace; font-size:.72rem;
+    color:var(--moss); border:1px dashed var(--line); padding:8px 12px; border-radius:var(--radius);
+  }
+  .stats{display:grid; grid-template-columns:1fr; gap:1px; background:var(--line-soft); border:1px solid var(--line-soft);}
+  .stat{background:var(--panel-2); padding:24px; display:flex; align-items:center; gap:18px;}
+  .stat-icon{flex:0 0 auto; width:40px; height:40px;}
+  .stat-icon svg{width:100%; height:100%; fill:none; stroke:var(--blaze); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;}
+  .stat .label{font-size:.85rem; letter-spacing:.03em; text-transform:none; color:var(--bone); font-weight:500;}
+
+  /* ---------- OFERTA / SEKTORY ---------- */
+  .sectors{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+  @media (max-width:860px){.sectors{grid-template-columns:1fr;}}
+  .sector-card{
+    border:1px solid var(--line); background:var(--panel-2); padding:40px 34px;
+    position:relative; border-radius:var(--radius); transition:border-color .25s ease, transform .25s ease;
+  }
+  .sector-card:hover{border-color:var(--moss); transform:translateY(-4px);}
+  .sector-tag{
+    font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.15em; color:var(--blaze);
+    border:1px solid var(--blaze-soft); background:var(--blaze-soft); display:inline-block;
+    padding:5px 10px; border-radius:var(--radius); margin-bottom:22px;
+  }
+  .sector-card .icon{width:44px; height:44px; margin-bottom:20px;}
+  .sector-card .icon svg{width:100%; height:100%; stroke:var(--bone); fill:none; stroke-width:1.4;}
+  .sector-card h3{font-size:1.5rem; margin:0 0 14px;}
+  .sector-card > p{color:var(--sand); margin:0 0 24px; max-width:44ch;}
+  .sector-list{list-style:none; margin:0 0 30px; padding:0; display:flex; flex-direction:column; gap:12px;}
+  .sector-list li{
+    display:flex; gap:12px; align-items:flex-start; font-size:.92rem; color:var(--sand);
+  }
+  .sector-list li::before{
+    content:""; flex:0 0 auto; width:7px; height:7px; margin-top:7px; background:var(--blaze);
+  }
+  .sector-card .btn{width:100%; justify-content:center;}
+  .sector-btn-row{display:flex; flex-direction:column; gap:12px;}
+  .btn-fb-events{border-color:var(--line); color:var(--sand);}
+  .btn-fb-events:hover{border-color:#1877F2; color:#1877F2;}
+
+  /* ---------- STRZELNICA ---------- */
+  .range-section{background:var(--panel); border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);}
+  .range-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;}
+  @media (max-width:900px){.range-grid{grid-template-columns:1fr; gap:36px;}}
+  .range-photos{display:flex; flex-direction:column; gap:16px;}
+  .range-photos img{
+    width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; border:1px solid var(--line); border-radius:var(--radius);
+    filter:grayscale(10%) contrast(1.05);
+  }
+  .range-photos img:nth-child(2){margin-left:14%; width:86%;}
+  @media (max-width:600px){.range-photos img:nth-child(2){margin-left:0; width:100%;}}
+  .range-copy h2{font-size:clamp(1.9rem, 3.6vw, 2.6rem); margin:18px 0 20px; line-height:1.05;}
+  .range-copy > p{color:var(--sand); margin:0 0 24px; max-width:52ch;}
+  .range-copy .sector-list{margin-bottom:30px;}
+  .range-copy .sector-btn-row{flex-direction:row; flex-wrap:wrap;}
+  .range-copy .btn{width:auto; flex:1 1 240px;}
+
+  /* ---------- GALERIA ---------- */
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;
+  }
+  @media (max-width:760px){.gallery-grid{grid-template-columns:repeat(2, 1fr);}}
+  @media (max-width:480px){.gallery-grid{grid-template-columns:1fr;}}
+  .g-tile{
+    aspect-ratio:4/3; border:1px dashed var(--line); border-radius:var(--radius);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    background:
+      repeating-linear-gradient(135deg, var(--panel-2), var(--panel-2) 10px, var(--panel) 10px, var(--panel) 20px);
+    color:var(--moss);
+  }
+  .g-tile svg{width:30px; height:30px; stroke:var(--moss); fill:none; stroke-width:1.3;}
+  .g-tile .g-label{font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em;}
+  .g-photo{
+    border-style:solid; overflow:hidden; background:none; padding:0;
+  }
+  .g-photo img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:grayscale(15%) contrast(1.05);
+    transition:transform .4s ease, filter .4s ease;
+  }
+  .g-photo:hover img{transform:scale(1.06); filter:grayscale(0%) contrast(1.1);}
+
+  /* ---------- KONTAKT ---------- */
+  .contact{background:var(--panel); border-top:1px solid var(--line-soft);}
+  .contact-grid{display:grid; grid-template-columns:.9fr 1.1fr; gap:64px;}
+  @media (max-width:860px){.contact-grid{grid-template-columns:1fr; gap:48px;}}
+  .contact-item{display:flex; gap:16px; margin-bottom:26px;}
+  .contact-item .icon{width:22px; height:22px; flex:0 0 auto; margin-top:2px;}
+  .contact-item .icon svg{width:100%; height:100%; stroke:var(--blaze); fill:none; stroke-width:1.5;}
+  .contact-item .k{font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--moss); margin-bottom:4px;}
+  .contact-item .v{color:var(--bone); font-size:1rem;}
+  .social-row{display:flex; gap:12px; margin-top:30px;}
+  .social-btn{
+    width:44px; height:44px; border:1px solid var(--line); border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center; text-decoration:none;
+    transition:border-color .2s, color .2s;
+  }
+  .social-btn svg{width:18px; height:18px; fill:var(--bone);}
+  .social-btn:hover{border-color:var(--blaze);}
+  .social-btn:hover svg{fill:var(--blaze);}
+
+  form{display:flex; flex-direction:column; gap:18px;}
+  .field label{
+    display:block; font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--moss); margin-bottom:8px;
+  }
+  .field input, .field textarea{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--bone);
+    padding:13px 14px; font-family:'Inter',sans-serif; font-size:.95rem; border-radius:var(--radius);
+    resize:vertical;
+  }
+  .field input:focus, .field textarea:focus{border-color:var(--blaze); outline:none;}
+  .form-note{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--moss); margin:0;}
+
+  .or-divider{
+    display:flex; align-items:center; gap:14px; margin:26px 0 16px;
+    font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--moss);
+  }
+  .or-divider::before, .or-divider::after{content:""; flex:1; height:1px; background:var(--line);}
+  .btn-whatsapp{width:100%; justify-content:center; gap:10px;}
+  .btn-whatsapp:hover{border-color:#25D366; color:#25D366;}
+
+  /* ---------- FOOTER ---------- */
+  footer{border-top:1px solid var(--line-soft); padding:36px 0;}
+  .footer-row{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+  }
+  .footer-row .logo{font-size:1rem;}
+  .footer-links{display:flex; gap:24px; list-style:none; margin:0; padding:0;}
+  .footer-links a{text-decoration:none; font-size:.78rem; color:var(--sand); letter-spacing:.06em;}
+  .footer-links a:hover{color:var(--blaze);}
+  .copyright{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--moss);}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <a href="#" class="logo"><img src="assets/logo-wydra.png" alt="Wydra ASG" class="logo-mark"><span>WYDRA</span><span>ARENA ASG</span></a>
+    <ul class="nav-links">
+      <li><a href="#o-nas">O nas</a></li>
+      <li><a href="#oferta">Oferta</a></li>
+      <li><a href="#survival">Survival</a></li>
+      <li><a href="#strzelnica">Strzelnica</a></li>
+      <li><a href="#galeria">Galeria</a></li>
+      <li><a href="#kontakt">Kontakt</a></li>
+    </ul>
+    <a class="nav-fb desktop-only" href="https://www.facebook.com/WydraASG" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M13.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.6 1.6-1.6h1.7V3.2C16.5 3.1 15.4 3 14.1 3c-2.7 0-4.6 1.7-4.6 4.7v2.1H6.8V13h2.7v8h4z"/></svg>
+      Facebook
+    </a>
+    <button class="burger" id="burgerBtn" aria-label="Otwórz menu" aria-expanded="false"><span></span></button>
+  </nav>
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="#o-nas">O nas</a>
+    <a href="#oferta">Oferta</a>
+    <a href="#survival">Survival</a>
+    <a href="#strzelnica">Strzelnica</a>
+    <a href="#galeria">Galeria</a>
+    <a href="#kontakt">Kontakt</a>
+    <a href="https://www.facebook.com/WydraASG" target="_blank" rel="noopener">Facebook ↗</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="hero">
+    <div class="grid-overlay" aria-hidden="true"></div>
+    <svg class="contour" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g fill="none" stroke="#7a8536" stroke-width="1">
+        <path d="M-50,180 C 200,100 400,260 650,190 S 1100,80 1450,220" opacity=".35"/>
+        <path d="M-50,260 C 220,180 420,340 680,270 S 1120,160 1450,300" opacity=".28"/>
+        <path d="M-50,340 C 240,260 440,420 700,350 S 1140,240 1450,380" opacity=".22"/>
+        <path d="M-50,520 C 260,460 460,610 720,540 S 1160,440 1450,570" opacity=".2"/>
+        <path d="M-50,600 C 280,540 480,690 740,620 S 1180,520 1450,650" opacity=".16"/>
+        <path d="M-50,760 C 300,700 500,830 760,770 S 1200,690 1450,800" opacity=".14"/>
+      </g>
+    </svg>
+    <span class="grid-tick mono" style="top:96px; left:24px;">SEKTOR A1</span>
+    <span class="grid-tick mono" style="top:96px; right:24px;">SEKTOR J8</span>
+    <span class="grid-tick mono" style="bottom:96px; left:24px;">TEREN LEŚNY / MIEJSKI</span>
+
+    <div class="wrap hero-inner">
+      <div class="hero-text">
+        <span class="eyebrow mono">GRY ASG // SZKOLENIA SURVIVALOWE</span>
+        <h1>WYDRA<br><em>ARENA ASG</em></h1>
+        <p class="lead">
+          Taktyka, teren i charakter. Organizujemy gry ASG: otwarte,scenariuszowe oraz Szkolenia
+          z przetrwania w terenie — dla początkujących stawiających pierwsze kroki
+          i wyjadaczy szukających prawdziwego wyzwania.
+        </p>
+        <div class="cta-row">
+          <a href="#oferta" class="btn btn-primary">Zobacz ofertę gier</a>
+          <a href="#survival" class="btn btn-outline">Szkolenia survivalowe</a>
+        </div>
+      </div>
+
+      <div class="stamp-wrap" aria-hidden="true">
+        <img src="assets/logo-wydra.png" alt="" loading="lazy">
+      </div>
+    </div>
+
+    <div class="scroll-cue"><span>PRZEWIŃ</span><span class="line"></span></div>
+  </section>
+
+  <!-- ================= O NAS ================= -->
+  <section class="about" id="o-nas">
+    <div class="wrap about-grid">
+      <div class="about-copy">
+        <span class="eyebrow mono">O DRUŻYNIE</span>
+        <h2 style="font-size:clamp(1.8rem,3.4vw,2.4rem); margin:0 0 22px;">Kim jesteśmy</h2>
+        <p>
+          WYDRA ARENA ASG działa nieformalnie od 2024 roku — zaczęło się od
+          kilku osób ze środowiska ASG i survivalu, które postanowiły
+          zorganizować się i wspólnie stworzyć własną Arenę ASG na terenie
+          postkopalnianym. Obecnie otwieramy nową miejscówkę — z poprzedniej
+          musieliśmy zrezygnować, ale cały czas gramy dalej i rozwijamy się.
+        </p>
+        <p>
+          Gry organizujemy głównie z myślą o dorosłych, ale jesteśmy w stanie
+          przygotować też zajęcia dla dzieci i młodzieży. Stawiamy na
+          bezpieczeństwo, konkretny instruktaż i realny kontakt z terenem —
+          zarówno na grach ASG, jak i na szkoleniach survivalowych. Oferta jest
+          otwarta zarówno dla osób, które biorą do ręki replikę pierwszy raz,
+          jak i dla doświadczonych graczy oraz drużyn szukających partnera do
+          organizacji własnych scenariuszy.
+        </p>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-icon"><svg viewBox="0 0 40 40"><path d="M5 30l8-9 6 5 12-15M27 11h6v6"/></svg></div>
+          <div class="label">Doświadczenie, które stale rośnie</div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon"><svg viewBox="0 0 40 40"><circle cx="14" cy="16" r="5"/><circle cx="27" cy="14" r="4"/><path d="M4 32c1-6 5-9 10-9s9 3 10 9M24 32c1-5 4-8 9-8s7 3 8 8"/></svg></div>
+          <div class="label">Coraz większe grono graczy</div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon"><svg viewBox="0 0 40 40"><path d="M9 8v6M31 8v6M6 16h28M6 12a3 3 0 013-3h22a3 3 0 013 3v20a3 3 0 01-3 3H9a3 3 0 01-3-3V12z"/><path d="M13 26l4 4 9-9"/></svg></div>
+          <div class="label">Regularne gry i szkolenia</div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon"><svg viewBox="0 0 40 40"><path d="M20 34s10-9.5 10-17a10 10 0 10-20 0c0 7.5 10 17 10 17z"/><circle cx="20" cy="17" r="3.5"/><path d="M5 8c3-2 6-3 8-3M35 8c-3-2-6-3-8-3" opacity=".6"/></svg></div>
+          <div class="label">Rozwijający się teren działania</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= OFERTA ================= -->
+  <section id="oferta">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow mono">OFERTA</span>
+        <h2>Dwa sektory działania</h2>
+        <p>Gry ASG i szkolenia survivalowe — pod jednym szyldem, różne cele, ten sam nacisk na teren i bezpieczeństwo.</p>
+      </div>
+
+      <div class="sectors">
+
+        <article class="sector-card" id="gry-asg">
+          <span class="sector-tag mono">SEKTOR A</span>
+          <div class="icon">
+            <svg viewBox="0 0 48 48"><path d="M4 30l10-4 6 4 8-10 10 4 6-2M4 30v6h40v-6M18 26v-8M28 20v-6"/></svg>
+          </div>
+          <h3>Gry ASG</h3>
+          <p>Gry otwarte, scenariuszowe, LARP czy MilSim w terenie leśnym.</p>
+          <ul class="sector-list">
+            <li>Gry otwarte, scenariuszowe, LARP i MilSim</li>
+            <li>Teren leśny i miejski</li>
+            <li>Wypożyczenie sprzętu dla początkujących</li>
+            <li>Zapisy indywidualne i drużynowe</li>
+          </ul>
+          <div class="sector-btn-row">
+            <a href="#kontakt" class="btn btn-outline">Zapisz się na grę</a>
+            <a href="https://www.facebook.com/WydraASG/events" target="_blank" rel="noopener" class="btn btn-outline btn-fb-events">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M13.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.6 1.6-1.6h1.7V3.2C16.5 3.1 15.4 3 14.1 3c-2.7 0-4.6 1.7-4.6 4.7v2.1H6.8V13h2.7v8h4z"/></svg>
+              Terminarz na Facebooku
+            </a>
+          </div>
+        </article>
+
+        <article class="sector-card" id="survival">
+          <span class="sector-tag mono">SEKTOR B</span>
+          <div class="icon">
+            <svg viewBox="0 0 48 48"><path d="M24 6l16 30H8L24 6zM24 20v10M14 44h20M18 36l-4 8M30 36l4 8"/></svg>
+          </div>
+          <h3>Szkolenia survivalowe</h3>
+          <p>Praktyczne szkolenia z przetrwania w terenie — od podstaw bushcraftu po zaawansowaną nawigację.</p>
+          <ul class="sector-list">
+            <li>Budowa schronień i rozniecanie ognia</li>
+            <li>Nawigacja terenowa i orientacja w terenie</li>
+            <li>Zdobywanie wody i pożywienia</li>
+            <li>Pierwsza pomoc w warunkach polowych</li>
+          </ul>
+          <div class="sector-btn-row">
+            <a href="#kontakt" class="btn btn-outline">Zapisz się na szkolenie</a>
+            <a href="https://www.facebook.com/WydraASG/events" target="_blank" rel="noopener" class="btn btn-outline btn-fb-events">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M13.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.6 1.6-1.6h1.7V3.2C16.5 3.1 15.4 3 14.1 3c-2.7 0-4.6 1.7-4.6 4.7v2.1H6.8V13h2.7v8h4z"/></svg>
+              Terminarz na Facebooku
+            </a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MOBILNA STRZELNICA ================= -->
+  <section id="strzelnica" class="range-section">
+    <div class="wrap range-grid">
+      <div class="range-photos">
+        <img src="assets/strzelnica-1.jpg" alt="Stanowisko strzeleckie mobilnej strzelnicy ASG w plenerze" loading="lazy">
+        <img src="assets/strzelnica-2.jpg" alt="Stanowisko z replikami długimi pod namiotem" loading="lazy">
+      </div>
+      <div class="range-copy">
+        <span class="sector-tag mono">USŁUGA NA WYDARZENIA</span>
+        <h2>Mobilna strzelnica ASG</h2>
+        <p>
+          Przyjeżdżamy z gotowym, w pełni zabezpieczonym stanowiskiem strzeleckim na Wasz piknik,
+          dni miasta, integrację firmową czy rocznicę. Uczestnicy — także ci, którzy nigdy
+          nie mieli repliki w ręku — strzelają do tarcz pod okiem instruktora, w bezpiecznej,
+          wydzielonej strefie.
+        </p>
+        <ul class="sector-list">
+          <li>Kompletny montaż i demontaż stanowiska na miejscu</li>
+          <li>Repliki krótkie i długie, w tym stanowisko leżące</li>
+          <li>Instruktaż bezpieczeństwa przed każdym strzelaniem</li>
+          <li>Okulary ochronne i sprzęt zabezpieczający dla każdego uczestnika</li>
+          <li>Tarcze, stojaki i wydzielone strefy strzelania/obserwacji</li>
+          <li>Pamiątkowe zdjęcie przy strzelnicy</li>
+        </ul>
+        <div class="sector-btn-row">
+          <a href="#kontakt" class="btn btn-primary">Zapytaj o wycenę na Twoje wydarzenie</a>
+          <a href="https://wa.me/48518610383" target="_blank" rel="noopener" class="btn btn-outline btn-whatsapp">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 3a9 9 0 00-7.8 13.5L3 21l4.6-1.2A9 9 0 1012 3zm5.2 12.9c-.2.6-1.3 1.2-1.8 1.3-.5.1-1 .1-3.2-.9-2.7-1.2-4.4-4-4.6-4.2-.1-.2-1.1-1.5-1.1-2.9 0-1.4.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.7 1.7.8 1.8.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.3.1.5.1.6-.1l.7-.8c.2-.3.4-.2.7-.1l1.6.8c.2.1.4.2.5.3.1.2.1.9-.1 1.5z"/></svg>
+            Zapytaj na WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GALERIA ================= -->
+  <section id="galeria">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow mono">GALERIA</span>
+        <h2>Z terenu</h2>
+        <p></p>
+      </div>
+      <div class="gallery-grid">
+        <div class="g-tile g-photo"><img src="assets/foto-01.jpg" alt="Drużyna Wydra ASG na zbiórce w lesie" loading="lazy"></div>
+        <div class="g-tile g-photo"><img src="assets/foto-02.jpg" alt="Gracze w przerwie podczas gry w budynku" loading="lazy"></div>
+        <div class="g-tile g-photo"><img src="assets/foto-03.jpg" alt="Grupa graczy ASG w terenie leśnym" loading="lazy"></div>
+        <div class="g-tile g-photo"><img src="assets/foto-04.jpg" alt="Starcie graczy na otwartym polu" loading="lazy"></div>
+        <div class="g-tile g-photo"><img src="assets/foto-05.jpg" alt="Nocna gra scenariuszowa na wzgórzu" loading="lazy"></div>
+        <div class="g-tile g-photo"><img src="assets/foto-06.jpg" alt="Gra zimowa w śniegu" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KONTAKT ================= -->
+  <section class="contact" id="kontakt">
+    <div class="wrap contact-grid">
+      <div>
+        <span class="eyebrow mono">KONTAKT</span>
+        <h2 style="font-size:clamp(1.8rem,3.4vw,2.4rem); margin:0 0 30px;">Napisz do nas</h2>
+
+        <div class="contact-item">
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
+          <div><div class="k">E-mail</div><div class="v">wydraasg@gmail.com</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5c0 8 7 15 15 15l3-4-6-3-2 2c-3-1-5-3-6-6l2-2-3-6-4 3z"/></svg></div>
+          <div><div class="k">Telefon</div><div class="v">518 610 383</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
+          <div><div class="k">Teren</div><div class="v">Fort Belweder - ul. Leśna 28, 42-244 Latosówka, Polska</div></div>
+        </div>
+
+        <div class="social-row">
+          <a class="social-btn" href="https://www.facebook.com/WydraASG" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24"><path d="M13.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.6 1.6-1.6h1.7V3.2C16.5 3.1 15.4 3 14.1 3c-2.7 0-4.6 1.7-4.6 4.7v2.1H6.8V13h2.7v8h4z"/></svg>
+          </a>
+          <a class="social-btn" href="mailto:wydraasg@gmail.com" aria-label="E-mail">
+            <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3V5zm0 0l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          </a>
+          <a class="social-btn" href="https://wa.me/48518610383" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 00-7.8 13.5L3 21l4.6-1.2A9 9 0 1012 3zm5.2 12.9c-.2.6-1.3 1.2-1.8 1.3-.5.1-1 .1-3.2-.9-2.7-1.2-4.4-4-4.6-4.2-.1-.2-1.1-1.5-1.1-2.9 0-1.4.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.7 1.7.8 1.8.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.3.1.5.1.6-.1l.7-.8c.2-.3.4-.2.7-.1l1.6.8c.2.1.4.2.5.3.1.2.1.9-.1 1.5z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <form id="contactForm">
+          <div class="field">
+            <label for="imie">Imię i nazwisko</label>
+            <input id="imie" name="imie" type="text" required>
+          </div>
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" required>
+          </div>
+          <div class="field">
+            <label for="temat">Czego dotyczy zapytanie?</label>
+            <input id="temat" name="temat" type="text" placeholder="np. zapis na grę / szkolenie survivalowe">
+          </div>
+          <div class="field">
+            <label for="wiadomosc">Wiadomość</label>
+            <textarea id="wiadomosc" name="wiadomosc" rows="4" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
+          <p class="form-note">Kliknięcie „Wyślij" otworzy domyślny program pocztowy z gotową wiadomością do wydraasg@gmail.com.</p>
+        </form>
+
+        <div class="or-divider"><span>lub napisz od razu</span></div>
+        <a href="https://wa.me/48518610383" target="_blank" rel="noopener" class="btn btn-outline btn-whatsapp">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3a9 9 0 00-7.8 13.5L3 21l4.6-1.2A9 9 0 1012 3zm5.2 12.9c-.2.6-1.3 1.2-1.8 1.3-.5.1-1 .1-3.2-.9-2.7-1.2-4.4-4-4.6-4.2-.1-.2-1.1-1.5-1.1-2.9 0-1.4.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.7 1.7.8 1.8.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.3.1.5.1.6-.1l.7-.8c.2-.3.4-.2.7-.1l1.6.8c.2.1.4.2.5.3.1.2.1.9-.1 1.5z"/></svg>
+          Napisz na WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <a href="#hero" class="logo"><span style="color:var(--blaze);">WYDRA</span><span>ASG</span></a>
+    <ul class="footer-links">
+      <li><a href="#o-nas">O nas</a></li>
+      <li><a href="#oferta">Oferta</a></li>
+      <li><a href="#survival">Survival</a></li>
+      <li><a href="https://www.facebook.com/WydraASG" target="_blank" rel="noopener">Facebook</a></li>
+    </ul>
+    <span class="copyright" id="copyrightYear">© 2026 WYDRA ASG</span>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggle
+  const burgerBtn = document.getElementById('burgerBtn');
+  const mobilePanel = document.getElementById('mobilePanel');
+  burgerBtn.addEventListener('click', () => {
+    const open = mobilePanel.classList.toggle('open');
+    burgerBtn.classList.toggle('open', open);
+    burgerBtn.setAttribute('aria-expanded', open);
+  });
+  mobilePanel.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    mobilePanel.classList.remove('open');
+    burgerBtn.classList.remove('open');
+    burgerBtn.setAttribute('aria-expanded', 'false');
+  }));
+
+  // Contact form -> otwiera klienta poczty z wypełnioną wiadomością
+  document.getElementById('contactForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const imie = document.getElementById('imie').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const temat = document.getElementById('temat').value.trim() || 'Wiadomość ze strony Wydra ASG';
+    const wiadomosc = document.getElementById('wiadomosc').value.trim();
+
+    const body =
+      `Imię i nazwisko: ${imie}\nE-mail: ${email}\n\n${wiadomosc}`;
+
+    const mailto =
+      `mailto:wydraasg@gmail.com?subject=${encodeURIComponent(temat)}&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailto;
+  });
+
+  // Footer year
+  document.getElementById('copyrightYear').textContent = '© ' + new Date().getFullYear() + ' WYDRA ASG';
+</script>
+
+</body>
+</html>
